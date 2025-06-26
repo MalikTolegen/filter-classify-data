@@ -12,6 +12,20 @@ import argparse
 import shutil
 from pathlib import Path
 
+from __future__ import annotations
+
+
+import json
+import os
+
+from typing import Dict, List
+
+import torch
+import torch.nn.functional as F
+from PIL import Image
+from timm import create_model
+
+from torchvision import transforms
 # 0-6 label ↔ class folder names
 CLASS_NAMES = [
     'Hazy',
@@ -23,6 +37,35 @@ CLASS_NAMES = [
     'unclear'
 ]
 
+# Image preprocessing from inference.py
+IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+_preprocess = transforms.Compose(
+    [
+        transforms.Resize(256, interpolation=Image.BICUBIC),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
+    ]
+)
+
+# Predicting an image function from inference.py
+def _predict_one_image(img_path: str | Path, model: torch.nn.Module, device: torch.device, topk: int,
+                       idx_to_class: list[str]) -> List[tuple[str, float]]:
+    """Return top-k predictions as (label, prob) tuples."""
+    img = Image.open(img_path).convert("RGB")
+    tensor = _preprocess(img).unsqueeze(0).to(device)
+    output = model(tensor)
+    # HuggingFace models return an object with `.logits`
+    logits = output.logits if hasattr(output, "logits") else output
+    probs = F.softmax(logits, dim=1)[0]
+    topk_prob, topk_idx = probs.topk(topk)
+    results = []
+    for p, idx in zip(topk_prob.tolist(), topk_idx.tolist()):
+        label = idx_to_class[idx] if idx < len(idx_to_class) and idx_to_class[idx] is not None else str(idx)
+        results.append((label, p))
+    return results
+                         
 # ────────────────────────────── Utility Functions ──────────────────────────────
 def has_jpeg(folder: Path) -> bool:
     """Returns True if folder contains at least one .jpg/.jpeg file."""
