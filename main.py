@@ -72,10 +72,25 @@ def has_jpeg(folder: Path) -> bool:
     return any(p.suffix.lower() in {'.jpg', '.jpeg'} for p in folder.iterdir() if p.is_file())
 
 def classify_folder(folder: Path) -> int:
-    
+    for file in folder.iterdir():
+      if file.suffix.lower() in {'jpg', '.jpeg'}:
+        try:
+          prob = _predict_one_image(file, model, device, topk = 1, idx_to_class = CLASS_NAMES)
+          label = prob[0][0]
+          return CLASS_NAMES.index(label)
+        except Exception as e:
+          print(f"Error on {file.name}: {e}")
+          break
     # e.g., Apply desired logic like majority vote / average softmax after per-image prediction
     return 6
-
+  
+# Defining model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = models.resnet18(pretrained = False)
+model.fc = torch.nn.Linear(model.fc.in_features, len(CLASS_NAMES)
+model.load_state_Dict(torchg.load("best_model.pth",map_location = deivce))
+model.eval().to(device)
+                           
 # ────────────────────────────── Main Logic ──────────────────────────────
 def main(src_root: Path, dst_root: Path, overwrite: bool):
     # Pre-create 7 class folders at destination
