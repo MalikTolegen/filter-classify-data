@@ -87,8 +87,8 @@ def classify_folder(folder: Path) -> int:
 # Defining model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = models.resnet18(pretrained = False)
-model.fc = torch.nn.Linear(model.fc.in_features, len(CLASS_NAMES)
-model.load_state_Dict(torchg.load("best_model.pth",map_location = deivce))
+model.fc = torch.nn.Linear(model.fc.in_features, len(CLASS_NAMES))
+model.load_state_dict(torchg.load("best_model.pth",map_location = deivce))
 model.eval().to(device)
                            
 # ────────────────────────────── Main Logic ──────────────────────────────
