@@ -7,12 +7,12 @@ filter_and_copy.py
 ✓ Label 0-6 → ['Hazy', 'Normal', 'raining', 'rainy but not raining',
                'snowing', 'snowy but not snowing', 'unclear']
 """
+from __future__ import annotations
 
 import argparse
 import shutil
 from pathlib import Path
 
-from __future__ import annotations
 
 
 import json
