@@ -29,10 +29,7 @@ def has_jpeg(folder: Path) -> bool:
     return any(p.suffix.lower() in {'.jpg', '.jpeg'} for p in folder.iterdir() if p.is_file())
 
 def classify_folder(folder: Path) -> int:
-    """
-    Replace this with your model code.
-    For example, always returns 'unclear'(6).
-    """
+    
     # e.g., Apply desired logic like majority vote / average softmax after per-image prediction
     return 6
 
