@@ -89,7 +89,7 @@ def classify_folder(folder: Path) -> int:
 # Defining model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = create_model(
-    'swinv2_tiny_window16_224', pretrained = False, num_classes = len(CLASS_NAMES)
+    'swinv2_large_window12_192', pretrained = False, num_classes = len(CLASS_NAMES)
 )
 model.load_state_dict(torch.load("best_model.pth",map_location = device))
 model.eval().to(device)
