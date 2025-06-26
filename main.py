@@ -8,6 +8,9 @@ filter_and_copy.py
                'snowing', 'snowy but not snowing', 'unclear']
 """
 from __future__ import annotations
+from typing import Dict, List
+from torchvision import models, transforms
+from timm import create_model
 
 import argparse
 import shutil
@@ -18,7 +21,6 @@ from pathlib import Path
 import json
 import os
 
-from typing import Dict, List
 
 import torch
 import torch.nn.functional as F
@@ -73,7 +75,7 @@ def has_jpeg(folder: Path) -> bool:
 
 def classify_folder(folder: Path) -> int:
     for file in folder.iterdir():
-      if file.suffix.lower() in {'jpg', '.jpeg'}:
+      if file.suffix.lower() in {'.jpg', '.jpeg'}:
         try:
           prob = _predict_one_image(file, model, device, topk = 1, idx_to_class = CLASS_NAMES)
           label = prob[0][0]
@@ -86,9 +88,10 @@ def classify_folder(folder: Path) -> int:
   
 # Defining model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.resnet18(pretrained = False)
-model.fc = torch.nn.Linear(model.fc.in_features, len(CLASS_NAMES))
-model.load_state_dict(torchg.load("best_model.pth",map_location = device))
+model = create_model(
+    'swinv2_tiny_window16_224', pretrained = False, num_classes = len(CLASS_NAMES)
+)
+model.load_state_dict(torch.load("best_model.pth",map_location = device))
 model.eval().to(device)
                            
 # ────────────────────────────── Main Logic ──────────────────────────────
